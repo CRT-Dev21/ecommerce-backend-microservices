@@ -1,13 +1,13 @@
 services:
 
-  ### Service Registry (Eureka)
+  ### Service Registry
   service-registry:
     build: ./service-registry
     container_name: service-registry
     ports:
       - "8761:8761"
 
-  ### PostgreSQL for Gateway (Reactive)
+  ### PostgreSQL for Gateway
   gateway-db:
     image: postgres:16
     container_name: gateway-db
@@ -22,7 +22,7 @@ services:
         target: /var/lib/postgresql/data
       - ./init/gateway-init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  ### PostgreSQL for Stock (Reactive)
+  ### PostgreSQL for Stock
   stock-db:
     image: postgres:16
     container_name: stock-db
@@ -37,7 +37,7 @@ services:
         target: /var/lib/postgresql/data
       - ./init/stock-init.sql:/docker-entrypoint-initdb.d/init.sql
 
-  ### PostgreSQL for Order (JPA)
+  ### PostgreSQL for Order
   order-db:
     image: postgres:16
     container_name: order-db
@@ -51,7 +51,7 @@ services:
       - type: tmpfs
         target: /var/lib/postgresql/data
 
-  ### PostgreSQL for Email (JPA)
+  ### PostgreSQL for Email
   email-db:
     image: postgres:16
     container_name: email-db
@@ -95,7 +95,7 @@ services:
     volumes:
       - ./kafka/create-topics.sh:/create-topics.sh
 
-  ### Gateway (Reactive + JWT)
+  ### Gateway
   gateway-service:
     build:
       context: .
@@ -118,7 +118,7 @@ services:
       - kafka
       - service-registry
 
-  ### Stock Service (Reactive + R2DBC)
+  ### Stock Service
   stock-service:
     build:
       context: .
