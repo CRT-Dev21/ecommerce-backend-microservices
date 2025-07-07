@@ -1,0 +1,141 @@
+services:
+
+  ### Service Registry (Eureka)
+  service-registry:
+    build: ./service-registry
+    container_name: service-registry
+    ports:
+      - "8761:8761"
+
+  ### PostgreSQL for Gateway (Reactive)
+  gateway-db:
+    image: postgres:16
+    container_name: gateway-db
+    environment:
+      POSTGRES_DB: gateway_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgreuser
+    ports:
+      - "5433:5432"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+      - ./init/gateway-init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  ### PostgreSQL for Stock (Reactive)
+  stock-db:
+    image: postgres:16
+    container_name: stock-db
+    environment:
+      POSTGRES_DB: stock_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgreuser
+    ports:
+      - "5434:5432"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+      - ./init/stock-init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  ### PostgreSQL for Order (JPA)
+  order-db:
+    image: postgres:16
+    container_name: order-db
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgreuser
+    ports:
+      - "5435:5432"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+
+  ### PostgreSQL for Email (JPA)
+  email-db:
+    image: postgres:16
+    container_name: email-db
+    environment:
+      POSTGRES_DB: email_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgreuser
+    ports:
+      - "5436:5432"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/postgresql/data
+
+  ### Kafka + Zookeeper
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  topic-creator:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - kafka
+    entrypoint: [ "/bin/bash", "-c", "/create-topics.sh" ]
+    volumes:
+      - ./kafka/create-topics.sh:/create-topics.sh
+
+  ### Gateway (Reactive + JWT)
+  gateway-service:
+    build:
+      context: .
+      dockerfile: gateway-service/Dockerfile
+    container_name: gateway-service
+    ports:
+      - "8080:8080"
+    depends_on:
+      - gateway-db
+      - service-registry
+
+  ### Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    container_name: order-service
+    depends_on:
+      - order-db
+      - kafka
+      - service-registry
+
+  ### Stock Service (Reactive + R2DBC)
+  stock-service:
+    build:
+      context: .
+      dockerfile: stock-service/Dockerfile
+    container_name: stock-service
+    depends_on:
+      - stock-db
+      - kafka
+      - service-registry
+
+  ### Email Service
+  email-service:
+    build:
+      context: .
+      dockerfile: email-service/Dockerfile
+    container_name: email-service
+    depends_on:
+      - email-db
+      - kafka
+      - service-registry

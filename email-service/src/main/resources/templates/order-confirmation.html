@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <!-- Estilos previos se mantienen igual -->
+</head>
+<body>
+<div class="header">
+    <h1>¡Gracias por tu compra, <span th:text="${name}">Cliente</span>!</h1>
+</div>
+
+<div class="content">
+    <p>Hemos recibido tu pedido correctamente y está siendo procesado.</p>
+
+    <div class="order-number">
+        Número de pedido: <strong th:text="${orderId}">12345</strong>
+    </div>
+
+    <h3>Detalles de tu pedido:</h3>
+    <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+        <thead>
+        <tr style="background-color: #f8f9fa;">
+            <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Producto</th>
+            <th style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;">Cantidad</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item : ${items}">
+            <td style="padding: 10px; border-bottom: 1px solid #ddd;" th:text="${item.productName}">Nombre del producto</td>
+            <td style="padding: 10px; text-align: right; border-bottom: 1px solid #ddd;" th:text="${item.qty}">1</td>
+        </tr>
+        </tbody>
+        <tfoot>
+        <tr>
+            <td colspan="2" style="padding: 10px; text-align: right; font-weight: bold;">
+                Total: <span th:text="${'$' + #numbers.formatDecimal(total, 1, 2)}">$0.00</span>
+            </td>
+        </tr>
+        </tfoot>
+    </table>
+
+    <p>Te enviaremos una notificación cuando tu pedido sea enviado.</p>
+
+    <p>Si tienes alguna pregunta sobre tu pedido, no dudes en contactarnos respondiendo a este correo.</p>
+
+    <p>Gracias por confiar en nosotros,</p>
+    <p>El equipo de Testing</p>
+</div>
+
+<div class="footer">
+    <!-- Footer se mantiene igual -->
+</div>
+</body>
+</html>
