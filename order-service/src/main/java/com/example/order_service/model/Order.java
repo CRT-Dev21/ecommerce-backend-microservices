@@ -22,6 +22,10 @@ public class Order {
 
     @Column(name = "user_id")
     private UUID userId;
+
+    @Transient
+    private String userEmail;
+
     private String status;
     private BigDecimal total;
     private String shippingAddress;

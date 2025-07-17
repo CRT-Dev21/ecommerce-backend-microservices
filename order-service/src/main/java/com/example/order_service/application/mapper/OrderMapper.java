@@ -15,10 +15,11 @@ import java.util.UUID;
 @Component
 public class OrderMapper {
 
-    public Order requestToOrder(OrderRequest orderRequest, String userId) {
+    public Order requestToOrder(OrderRequest orderRequest, String userId, String userEmail) {
         Order order = new Order();
 
         order.setUserId(UUID.fromString(userId));
+        order.setUserEmail(userEmail);
         order.setTotal(orderRequest.total());
         order.setShippingAddress(orderRequest.shippingAddress());
         order.setItems(toOrderItems(orderRequest.items(), order));

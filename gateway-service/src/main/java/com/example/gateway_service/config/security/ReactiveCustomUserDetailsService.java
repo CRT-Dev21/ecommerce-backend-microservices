@@ -21,17 +21,15 @@ public class ReactiveCustomUserDetailsService implements ReactiveUserDetailsServ
     @Override
     public Mono<UserDetails> findByUsername(String userId) {
         try {
-            UUID uuid = UUID.fromString(userId);
-
-            return userRepository.findByUserId(uuid)
-                    .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found with user Id: " + userId)))
+            return userRepository.findByUserId(UUID.fromString(userId))
+                    .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found with id: " + userId)))
                     .map(user -> org.springframework.security.core.userdetails.User.builder()
                             .username(user.getUserId().toString())
                             .password(user.getPassword())
                             .roles(user.getRole())
                             .build());
         } catch (IllegalArgumentException e) {
-            return Mono.error(new UsernameNotFoundException("Invalid userId format: " + userId));
+            return Mono.error(new Exception("Error searching user with id: " + userId));
         }
     }
 }

@@ -5,9 +5,10 @@ COPY ./base-domains ./base-domains
 RUN mvn -f ./base-domains/pom.xml clean install -DskipTests
 
 COPY ./email-service ./email-service
-RUN mvn -f ./email-service/pom.xml clean install -DskipTests
+RUN mvn -f ./email-service/pom.xml clean package -DskipTests -Pdocker
 
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
 COPY --from=builder /app/email-service/target/email-service-0.0.1-SNAPSHOT.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]

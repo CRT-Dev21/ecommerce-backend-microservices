@@ -27,6 +27,7 @@ public class JwtUtil {
     public String generateToken(User user) {
         return Jwts.builder()
                 .setSubject(user.getUserId().toString())
+                .claim("email", user.getEmail())
                 .claim("role", user.getRole())
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + jwtExpirationInMs))
@@ -36,11 +37,6 @@ public class JwtUtil {
 
     public Mono<String> extractUserId(String token) {
         return Mono.fromCallable(() -> extractClaim(token, Claims::getSubject))
-                .onErrorResume(e -> Mono.error(new JwtException("Invalid token")));
-    }
-
-    public Mono<String> extractUserRole(String token) {
-        return Mono.fromCallable(() -> extractClaim(token, claims -> claims.get("role", String.class)))
                 .onErrorResume(e -> Mono.error(new JwtException("Invalid token")));
     }
 

@@ -30,16 +30,12 @@ public class JwtWebFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
-        log.info("Authorization header: {}", authHeader);
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            log.info("Token extracted: {}", token);
 
             try {
                 Claims claims = jwtUtil.extractAllClaims(token);
-                log.info("Claims extracted: subject={}, role={}",
-                        claims.getSubject(), claims.get("role"));
 
                 if (isTokenExpired(claims)) {
                     log.warn("Token expired");
@@ -48,6 +44,7 @@ public class JwtWebFilter extends OncePerRequestFilter {
                 }
 
                 request.setAttribute("userId", claims.getSubject());
+                request.setAttribute("userEmail", claims.get("email", String.class));
                 request.setAttribute("role", claims.get("role", String.class));
 
             } catch (Exception e) {
@@ -64,7 +61,6 @@ public class JwtWebFilter extends OncePerRequestFilter {
 
     private boolean isTokenExpired(Claims claims) {
         Date expiration = claims.getExpiration();
-        log.info("Token expiration: {}", expiration);
         return expiration != null && expiration.before(new Date());
     }
 }

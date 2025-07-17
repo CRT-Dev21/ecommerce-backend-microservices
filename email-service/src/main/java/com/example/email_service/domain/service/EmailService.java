@@ -2,7 +2,6 @@ package com.example.email_service.domain.service;
 
 import com.example.basedomains.dto.request.ItemOrderRequest;
 import com.example.email_service.domain.exceptions.EmailSendingException;
-import com.example.email_service.model.Customer;
 import jakarta.mail.internet.InternetAddress;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -34,14 +33,14 @@ public class EmailService {
 //    @Value("${spring.mail.display-name:MyApp}")
 //    private String displayName;
 
-    public void sendOrderConfirmation(Customer customer, Long orderId, List<ItemOrderRequest> items, double total) {
+    public void sendOrderConfirmation(String userEmail, Long orderId, List<ItemOrderRequest> items, double total) {
         try {
             String subject = "Order confirmation #" + orderId;
-            String content = buildOrderConfirmationContent(customer.getName(), orderId, items, total);
-            sendEmail(customer.getEmail(), subject, content);
-            log.info("Order confirmation sent to {}", customer.getEmail());
+            String content = buildOrderConfirmationContent(orderId, items, total);
+            sendEmail(userEmail, subject, content);
+            log.info("Order confirmation sent to {}", userEmail);
         } catch (Exception ex) {
-            log.error("Failed to send order confirmation to {}", customer.getEmail(), ex);
+            log.error("Failed to send order confirmation to {}", userEmail, ex);
         }
     }
 
@@ -67,9 +66,8 @@ public class EmailService {
 //        }
 //    }
 //
-//    private String buildOrderConfirmationContent(String name, Long orderId, List<ItemOrderRequest> items, double total) {
+//    private String buildOrderConfirmationContent(Long orderId, List<ItemOrderRequest> items, double total) {
 //        Context context = new Context();
-//        context.setVariable("name", name);
 //        context.setVariable("orderId", orderId);
 //        context.setVariable("items", items);
 //        context.setVariable("total", total);
@@ -85,9 +83,8 @@ public class EmailService {
         }
     }
 
-    private String buildOrderConfirmationContent(String name, Long orderId, List<ItemOrderRequest> items, double total) {
+    private String buildOrderConfirmationContent(Long orderId, List<ItemOrderRequest> items, double total) {
         Context context = new Context();
-        context.setVariable("name", name);
         context.setVariable("orderId", orderId);
         context.setVariable("items", items);
         context.setVariable("total", total);

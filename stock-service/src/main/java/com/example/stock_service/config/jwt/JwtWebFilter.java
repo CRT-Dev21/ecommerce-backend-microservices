@@ -46,13 +46,8 @@ public class JwtWebFilter implements WebFilter {
                 exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
                 return exchange.getResponse().setComplete();
             }
-        } else {
-            log.warn("Authorization header missing or doesn't start with Bearer");
         }
 
         return filterChain.filter(exchange);
     }
-
-
-
 }

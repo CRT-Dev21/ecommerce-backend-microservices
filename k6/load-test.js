@@ -53,13 +53,13 @@ function createProduct(token) {
     {
       request: http.file(
         JSON.stringify({
-          productName: `Producto Stress ${Math.random().toFixed(5)}`,
-          description: "Descripcion",
+          productName: `Test product ${Math.random().toFixed(5)}`,
+          description: "Test product for load testing 123",
           price: 99.99,
           qty: 100,
-          category: "Tech",
+          category: "Electronics",
           minimumStock: 1,
-          location: "MX",
+          location: "USA",
         }),
         "request.json",
         "application/json"
@@ -74,7 +74,7 @@ function createProduct(token) {
   );
 
   check(res, {
-    "Producto creado": (r) => r.status === 200,
+    "Product created": (r) => r.status === 200,
   });
 
   return res;
@@ -85,17 +85,17 @@ export function sellerFlow() {
   const user = {
     name: userId,
     email: `${userId}@test.com`,
-    password: "123456",
+    password: "password123",
     role: "SELLER",
   };
 
   const regRes = registerUser(user);
   check(regRes, {
-    "Registro vendedor": (r) => r.status === 200 || r.status === 400,
+    "Seller registration": (r) => r.status === 200 || r.status === 400,
   });
 
   const token = loginUser(user.email, user.password);
-  check(token, { "Token recibido vendedor": (t) => !!t });
+  check(token, { "Seller token received": (t) => !!t });
 
   createProduct(token);
 
@@ -107,17 +107,17 @@ export function buyerFlow() {
   const user = {
     name: userId,
     email: `${userId}@test.com`,
-    password: "123456",
+    password: "password123",
     role: "BUYER",
   };
 
   const regRes = registerUser(user);
   check(regRes, {
-    "Registro comprador": (r) => r.status === 200 || r.status === 400,
+    "Buyer registration": (r) => r.status === 200 || r.status === 400,
   });
 
   const token = loginUser(user.email, user.password);
-  check(token, { "Token recibido comprador": (t) => !!t });
+  check(token, { "Buyer token received": (t) => !!t });
 
   const authHeaders = {
     headers: {
@@ -129,7 +129,7 @@ export function buyerFlow() {
     `${BASE_URL}/api/stockService?page=0&size=5`,
     authHeaders
   );
-  check(productsRes, { "Productos disponibles": (r) => r.status === 200 });
+  check(productsRes, { "Available products": (r) => r.status === 200 });
 
   const products = productsRes.json();
   if (products.length > 0) {
@@ -148,7 +148,7 @@ export function buyerFlow() {
         },
       ],
       total: product.price,
-      shippingAddress: "Dirección demo",
+      shippingAddress: "Fake Address 123",
     };
 
     const orderRes = http.post(
@@ -163,7 +163,7 @@ export function buyerFlow() {
       }
     );
 
-    check(orderRes, { "Orden colocada": (r) => r.status === 202 });
+    check(orderRes, { "Order placed": (r) => r.status === 202 });
 
     http.get(`${BASE_URL}/api/orderService/orders/`, authHeaders);
   }

@@ -1,17 +1,17 @@
 # 🛒 Scalable E-Commerce Backend – Microservices Architecture
 
-Personal proof-of-concept to demonstrate experience with backend architecture, microservices, authentication, resilience, event-driven communication, and performance under load.
+Personal proof-of-concept to demonstrate my experience in the backend layer, microservices, authentication, resilience, event-driven communication, and performance under load.
 
 ---
 
 ## 📌 Description
 
-This system simulates a real-world e-commerce platform using microservices and event-driven architecture.
+This application simulates a real-world e-commerce platform using microservices and an event-driven architecture, in which there can be sellers, who publish products for sale, and also buyers, who can view the products that are for sale, place orders, see the status of their orders, and if they are confirmed, receive a notification to their email (you need to be logged in to place orders and have a seller account to publish products).
 
 ### 🧾 Key Features
 
 - **Product publishing by sellers (Seller dashboard)**
-  
+
   ![Product creation example](docs/product-creation-example.png)
 
 - **Paginated product listing**
@@ -34,26 +34,31 @@ This system simulates a real-world e-commerce platform using microservices and e
 
   ![Order detail](docs/example-order.png)
 
-- **Event-driven email notifications**
+- **Email notifications**
 
   ![Email notification example](docs/order-confirmed-notification.png)
 
 - **Stock validation before order confirmation**
-  
-  The system validates availability before confirming orders. If sufficient stock is available, the order is marked as `CONFIRMED`; otherwise, it is `REJECTED`.
+
+  The application validates availability before confirming orders. If sufficient stock is available, the order is marked as `CONFIRMED`; otherwise, it is `REJECTED`.
 
 - **Centralized authentication with Spring Security + JWT**
-  
-  All authentication is managed through the API Gateway. Tokens include the user's UUID and role.
+
+  All authentication is managed through the API Gateway. Tokens include the user's UUID, email and role.
 
 - **Role-based access control (SELLER, BUYER)**
-  
-  Sellers can create products. Buyers can place and view their orders.
+
+  Sellers can create products. Buyers can view products, place and view their orders.
 
 - **Load tested under concurrent traffic using K6**
-  
-  Simulations reached over 3,000 users and 15,000 HTTP requests under local infrastructure, validating horizontal scalability and resilience.
 
+  Simulations executed with up to **3,000 users** and handled over **16,000 HTTP requests** in under 3 minutes.
+  The infrastructure demonstrated strong horizontal scalability and resilience under concurrent workloads.
+
+  Performance evaluations were executed in two scenarios:
+
+- **Scenario 1**: Single instance of each microservice (`gateway`, `order-service`, `stock-service`, `product-service`, `email-service`.).
+- **Scenario 2**: Two instances of `order-service` and `stock-service`, load balanced via service discovery.
 
 ## 🧱 Architecture Overview
 
@@ -66,7 +71,7 @@ This system simulates a real-world e-commerce platform using microservices and e
 - Spring Cloud Gateway
 - Spring Cloud Netflix Eureka
 - Spring Cloud LoadBalancer
-- Spring Data JPA (Order, Email)
+- Spring Data JPA (Order)
 - Spring WebFlux + R2DBC (Stock)
 - PostgreSQL
 - Apache Kafka (event-driven messaging)
@@ -92,10 +97,10 @@ This system simulates a real-world e-commerce platform using microservices and e
 
   📦 Body:
   {
-    name: String,
-    email: String,
-    password: String,
-    role: "SELLER" | "BUYER"
+  name: String,
+  email: String,
+  password: String,
+  role: "SELLER" | "BUYER"
   }
 
 - `POST /auth/login`  
@@ -103,8 +108,8 @@ This system simulates a real-world e-commerce platform using microservices and e
 
   📦 Body:
   {
-    email: String,
-    password: String
+  email: String,
+  password: String
   }
 
 ---
@@ -116,11 +121,11 @@ This system simulates a real-world e-commerce platform using microservices and e
   📎 Requires JWT  
   📦 Body:
   {
-    items: [
-        { productCode: String, productName: String, qty: Integer }
-        ],
-    total: BigDecimal,
-    shippingAddress: String
+  items: [
+  { productCode: String, productName: String, qty: Integer }
+  ],
+  total: BigDecimal,
+  shippingAddress: String
   }
 
 - `GET /api/orderService/orders/`  
@@ -133,7 +138,7 @@ This system simulates a real-world e-commerce platform using microservices and e
   📎 Requires JWT
   📦 Body:
   {
-    orderId: Long
+  orderId: Long
   }
 
 ---
@@ -150,7 +155,7 @@ This system simulates a real-world e-commerce platform using microservices and e
   📄 Public endpoint
   📦 Body:
   {
-    productCode: String
+  productCode: String
   }
 
 - `GET /api/stockService/image/{productCode}`  
@@ -158,7 +163,7 @@ This system simulates a real-world e-commerce platform using microservices and e
   📄 Public endpoint
   📦 Body:
   {
-    productCode: String
+  productCode: String
   }
 
 - `GET /api/stockService/seller`  
@@ -170,14 +175,14 @@ This system simulates a real-world e-commerce platform using microservices and e
   📎 Requires JWT (SELLER role)  
   📦 Body:
   {
-    productName: String,
-    description: String,
-    price: Double,
-    qty: Integer,
-    category: String,
-    minimumStock: Integer,
-    location: String,
-    image: File
+  productName: String,
+  description: String,
+  price: Double,
+  qty: Integer,
+  category: String,
+  minimumStock: Integer,
+  location: String,
+  image: File
   }
 
 ## 📦 Shared Event Module – base_domains
@@ -186,9 +191,10 @@ A shared module containing immutable record classes used across all services for
 
 ## 📊 Load Testing Results – K6
 
-To validate performance and scalability, two stress tests were conducted, simulating the real-world behavior of BUYERS and SELLERS using [K6](https://k6.io/).  
+To validate performance and scalability, two stress tests were conducted, simulating the real-world behavior of BUYERS and SELLERS using [K6](https://k6.io/).
 
 All traffic was routed through the API Gateway, triggering workflows for:
+
 - User registration.
 - Authentication.
 - Product creation.
@@ -205,68 +211,70 @@ All at the same time to simulate real-life scenarios.
 
 ### 🧩 Test Scenarios
 
-| Feature                       | Test 1                | Test 2                         |
-|-------------------------------|-----------------------|--------------------------------|
-| Service instances             | 1 per service         | 2x order & stock services      |
-| Service discovery             | ❌ None              | ✅ Eureka Server               |
-| Load balancing                | ❌ None              | ✅ Spring Cloud LoadBalancer   |
-| Virtual users (max)           | 350                   | 350                            |
-| Duration                      | 2m51s                 | 2m51s                          |
+| Feature             | Test 1        | Test 2                       |
+| ------------------- | ------------- | ---------------------------- |
+| Service instances   | 1 per service | 2x order & 2x stock          |
+| Service discovery   | ❌ None       | ✅ Eureka Server             |
+| Load balancing      | ❌ None       | ✅ Spring Cloud LoadBalancer |
+| Virtual users (max) | 350           | 350                          |
+| Duration            | 2m51s         | 2m51s                        |
 
 ---
 
 ### 📌 Functional Results
 
-| Metric                       | Test 1   | Test 2   | ✅ Outcome                       |
-|------------------------------|----------|----------|----------------------------------|
-| Total users registered       | 2641     | 3054     | +15.6%                           |
-| SELLERS                      | 1211     | 1395     | ✅                               |
-| BUYERS                       | 1430     | 1659     | ✅                               |
-| Products created             | 1211     | 1395     | ✅                               |
-| Orders placed                | 1430     | 1659     | ✅                               |
-| Confirmed                    | 1295     | 1479     | ✅                               |
-| Rejected (no stock)          | 135      | 180      | ✅ (proportional)                |
-| Internal server errors       | 0        | 0        | ✅                               |
+| Metric                 | Test 1 | Test 2 | ✅ Outcome                 |
+| ---------------------- | ------ | ------ | -------------------------- |
+| Total users registered | 3245   | 3152   | Similar throughput         |
+| SELLERS                | 1468   | 1421   | ✅                         |
+| BUYERS                 | 1777   | 1731   | ✅                         |
+| Products created       | 1463   | 1417   | ✅                         |
+| Orders placed          | 1777   | 1731   | ✅                         |
+| Confirmed              | 1594   | 1567   | ✅                         |
+| Rejected (no stock)    | 183    | 164    | ✅ (proportional behavior) |
+| Internal server errors | 0      | 0      | ✅ No backend failures     |
 
 ---
 
 ### ⚙️ Performance Metrics
 
-| Indicator                    | Test 1   | Test 2   | ✅ Notes                      |
-|------------------------------|----------|----------|--------------------------------|
-| http_req_duration (avg)      | 2.13s    | 1.80s    | -15% latency                   |
-| http_req_duration (p95)      | 4.09s    | 3.33s    | Better 95th percentile         |
-| http_req_failed (%)          | 1.10%    | 0.90%    | Fewer network failures         |
-| checks_failed                | 29       | 15       | More reliable                  |
-| completed iterations         | 2641     | 3054     | +15.6% throughput              |
-| total HTTP requests          | 13,643   | 15,798   | More requests handled          |
-| data_received                | 10 MB    | 12 MB    | Consistent                     |
-| data_sent                    | 6.5 MB   | 7.5 MB   | Consistent                     |
+| Indicator               | Test 1 | Test 2 | ✅ Notes                            |
+| ----------------------- | ------ | ------ | ----------------------------------- |
+| http_req_duration (avg) | 1.67s  | 1.74s  | Slight latency increase             |
+| http_req_duration (p95) | 3.44s  | 5.05s  | Higher peak under distributed setup |
+| http_req_failed (%)     | 0.70%  | 0.02%  | Significant error reduction         |
+| checks_failed           | 5      | 4      | Very reliable execution             |
+| Completed iterations    | 3245   | 3152   | Similar scale handled               |
+| Total HTTP requests     | 16,843 | 16,380 | Consistent throughput               |
+| Data_received           | 13 MB  | 12 MB  | Comparable                          |
+| Data_sent               | 8.4 MB | 8.2 MB | Comparable                          |
 
 ---
 
 ### ✅ Technical Conclusion
 
-- System scaled well under increased load.
-- Data integrity was maintained (confirmed/rejected orders handled properly).
-- Average response times and error rates improved significantly.
-- Eureka and LoadBalancer helped improve distribution and resilience.
-- Even under local setup (non-cloud), the system supported 3,000 + users and 15,000 + requests.
+- System handled ~3,100 users and ~16,000 HTTP requests without critical failures.
+- All flows completed successfully: user auth, product creation, ordering, and querying.
+- Scaling order and stock services reduced error rates significantly.
+- Eureka & Spring Cloud LoadBalancer successfully distributed traffic among instances.
+- Although 95th percentile latency increased slightly, the system gained resilience and consistency under load.
 
 > ⚠️ IMPORTANT NOTE
 
 I performed these tests in my own local environment, which is obviously limited—lacking cloud infrastructure or external load balancers.
-Despite this, the system was able to handle over 3,000 full virtual users and more than 15,000 HTTP requests, validating its horizontal scalability and resilience even under non-optimal conditions.
+Despite this, the system was able to handle over 3,000 users and more than 16,000 HTTP requests, validating its horizontal scalability and resilience even under non-optimal conditions.
 
 ---
 
 ### 📷 Screenshots (K6 Output)
 
+_Test 1: One instance per service_
 ![K6 Test 1](docs/k6-single-instance.png)
-*Test 1: One instance per service*
 
+_Test 2: With Eureka + load balancing and multiple instances of order service and stock service_
 ![K6 Test 2](docs/k6-scaled-eureka.png)
-*Test 2: With Eureka + load balancing and multiple instances of order service and stock service*
+
+![Eureka](docs/eureka-multiple-instances.png)
 
 ---
 
@@ -350,5 +358,5 @@ To enable it:
 
 Provide your own:
 
-- Sender email address
-- App password (e.g., for Gmail or another SMTP provider)
+- Sender email address in application.properties
+- App password (for Gmail or another SMTP provider) in application.properties

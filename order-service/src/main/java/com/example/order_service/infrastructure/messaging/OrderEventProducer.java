@@ -22,7 +22,6 @@ public class OrderEventProducer {
 
     public void sendOrderCreatedEvent(OrderCreatedEvent event) {
         kafkaTemplate.send(orderTopic, event);
-        log.info("Sent OrderCreatedEvent for order {}", event.orderId());
     }
 
     public void sendOrderConfirmedEvent(OrderConfirmedEvent event) {

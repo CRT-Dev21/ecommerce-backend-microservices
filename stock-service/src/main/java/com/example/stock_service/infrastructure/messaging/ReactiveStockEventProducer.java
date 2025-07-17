@@ -30,7 +30,7 @@ public class ReactiveStockEventProducer {
     }
 
     public Mono<Void> publishStockReservationFailed(Long orderId, String reason){
-        return kafkaSender.send(Mono.just(SenderRecord.create(stockTopic, null, System.currentTimeMillis(), orderId.toString(), new ReservedStockEvent(orderId, false, reason, new ArrayList<>(), 0), null)))
+        return kafkaSender.send(Mono.just(SenderRecord.create(stockTopic, null, System.currentTimeMillis(), orderId.toString(), new ReservedStockEvent(orderId, false, reason, new ArrayList<>(), 0, null), null)))
                 .doOnNext(result -> log.warn("Publishing stock reservation failed for order {}: {}", orderId, reason))
                 .then();
     }

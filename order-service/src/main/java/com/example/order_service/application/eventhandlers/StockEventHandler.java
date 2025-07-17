@@ -24,7 +24,7 @@ public class StockEventHandler {
         if (event.reserved()) {
             order.setStatus("CONFIRMED");
             eventProducer.sendOrderConfirmedEvent(
-                    new OrderConfirmedEvent(order.getId(), order.getUserId(), event.items(), event.total()));
+                    new OrderConfirmedEvent(order.getId(), order.getUserId(), event.userEmail(), event.items(), event.total()));
         } else {
             order.setStatus("REJECTED");
             order.setRejectionReason(event.reason());

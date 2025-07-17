@@ -23,8 +23,8 @@ public class OrderService {
     private final OrderEventProducer eventProducer;
     private final OrderMapper orderMapper;
 
-    public OrderResponse createOrder(OrderRequest orderRequest, String userId) {
-        Order order = orderMapper.requestToOrder(orderRequest, userId);
+    public OrderResponse createOrder(OrderRequest orderRequest, String userId, String userEmail) {
+        Order order = orderMapper.requestToOrder(orderRequest, userId, userEmail);
         order.setStatus("PENDING");
 
         Order savedOrder = orderRepository.save(order);
@@ -33,7 +33,8 @@ public class OrderService {
                 new OrderCreatedEvent(
                         savedOrder.getId(),
                         savedOrder.getUserId(),
-                        orderRequest.items()
+                        orderRequest.items(),
+                        userEmail
                 )
         );
 

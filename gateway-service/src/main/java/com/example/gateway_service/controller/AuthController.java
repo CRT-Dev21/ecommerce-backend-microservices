@@ -23,7 +23,7 @@ public class AuthController {
     @PostMapping("/register")
     public Mono<ResponseEntity<Map<String, String>>> register(@Valid @RequestBody UserDto userDto) {
         return authService.registerUser(userDto)
-                .map(token -> ResponseEntity.ok(Map.of("token", token)))
+                .map(message -> ResponseEntity.ok(Map.of("message", message)))
                 .onErrorResume(e -> {
                     e.printStackTrace();
                     Map<String, String> error = Map.of("error", e.getMessage());
@@ -39,10 +39,5 @@ public class AuthController {
         return authService.authenticateUser(email, password)
                 .map(token -> ResponseEntity.ok(Map.of("token", token)))
                 .onErrorResume(e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()));
-    }
-
-    @GetMapping("/test")
-    public Mono<String> testing() {
-        return Mono.just("Probando la autenticacioooooon");
     }
 }

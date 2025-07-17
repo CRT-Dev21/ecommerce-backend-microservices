@@ -28,13 +28,15 @@ public class OrderController {
 
         String userId = (String) request.getAttribute("userId");
 
+        String userEmail = (String) request.getAttribute("userEmail");
+
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        OrderResponse response = orderService.createOrder(orderRequest, userId);
+        OrderResponse response = orderService.createOrder(orderRequest, userId, userEmail);
 
-        log.info("NUEVA ORDEN CREADA: {}", response.toString());
+        log.info("New order with Id: {}", response.orderId());
         return ResponseEntity
                 .accepted()
                 .location(URI.create("/api/orderService/placeOrder" + response.orderId()))

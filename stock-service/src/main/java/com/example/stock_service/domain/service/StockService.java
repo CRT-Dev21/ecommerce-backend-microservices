@@ -36,7 +36,8 @@ public class StockService {
                                 true,
                                 "Stock reserved and reduced successfully",
                                 event.items(),
-                                total
+                                total,
+                                event.userEmail()
                         )
                 ))
                 .onErrorResume(e -> {

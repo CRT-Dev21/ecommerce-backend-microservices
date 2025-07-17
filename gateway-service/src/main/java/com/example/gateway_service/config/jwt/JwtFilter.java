@@ -1,5 +1,6 @@
 package com.example.gateway_service.config.jwt;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
@@ -13,6 +14,7 @@ import reactor.core.publisher.Mono;
 import java.util.UUID;
 
 @Component
+@Slf4j
 public class JwtFilter implements WebFilter {
 
     private final JwtUtil jwtUtil;
@@ -43,7 +45,6 @@ public class JwtFilter implements WebFilter {
                     return jwtUtil.extractUserId(token)
                             .flatMap(userId -> {
                                 try {
-                                    UUID.fromString(userId);
                                     return userDetailsService.findByUsername(userId)
                                             .flatMap(userDetails -> {
                                                 UsernamePasswordAuthenticationToken authentication =

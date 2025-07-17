@@ -1,6 +1,6 @@
 echo "Creating Kafka Topics..."
 
-TOPICS=("order-created-topic" "stock-reserved-topic" "order-confirmed-topic" "user-created-topic")
+TOPICS=("order-created-topic" "stock-reserved-topic" "order-confirmed-topic")
 
 for topic in "${TOPICS[@]}"; do
   kafka-topics --bootstrap-server kafka:9092 \

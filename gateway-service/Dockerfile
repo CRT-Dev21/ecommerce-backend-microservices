@@ -5,9 +5,10 @@ COPY ./base-domains ./base-domains
 RUN mvn -f ./base-domains/pom.xml clean install -DskipTests
 
 COPY ./gateway-service ./gateway-service
-RUN mvn -f ./gateway-service/pom.xml clean install -DskipTests
+RUN mvn -f ./gateway-service/pom.xml clean package -DskipTests -Pdocker
 
 FROM openjdk:17-jdk-alpine
 WORKDIR /app
 COPY --from=builder /app/gateway-service/target/gateway-service-0.0.1-SNAPSHOT.jar app.jar
+
 ENTRYPOINT ["java", "-jar", "app.jar"]
